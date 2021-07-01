@@ -1,0 +1,24 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t raimedeiros/complex-study-docker -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run -e CI=true raimedeiros/complex-study-docker npm test
+
+after_success: 
+  - docker build -t raimedeiros/multi-client ./client
+  - docker build -t raimedeiros/multi-nginx ./nginx
+  - docker build -t raimedeiros/multi-server ./server
+  - docker build -t raimedeiros/multi-worker ./worker
+  #Log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take those images and push them do docker hub
+  - docker push raimedeiros/multi-client
+  - docker push raimedeiros/multi-nginx
+  - docker push raimedeiros/multi-server
+  - docker push raimedeiros/multi-worker   
+
+
